@@ -13,11 +13,19 @@ VkManager::VkManager()
 
 VkManager::~VkManager()
 {
+
     m_Instance.destroy();
 }
 
 void VkManager::CreateInstance()
 {
+#ifdef NDEBUG
+    if (!m_ValidationLayersManager.CheckValidationLayerSupport())
+    {
+        throw std::runtime_error("Validation layers requested but unavailable.");
+    }
+#endif
+
     uint32_t glfwExtensionCount{};
     const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
@@ -45,6 +53,11 @@ void VkManager::CreateInstance()
         static_cast<uint32_t>(extensions.size()),
         extensions.data(),
     };
+
+#ifdef NDEBUG
+        createInfo.enabledLayerCount = m_ValidationLayersManager.validationLayers.size();
+        createInfo.ppEnabledLayerNames = m_ValidationLayersManager.validationLayers.data();
+#endif
 
     if (vk::createInstance(&createInfo, nullptr, &m_Instance) != vk::Result::eSuccess)
     {
