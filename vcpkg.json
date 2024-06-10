@@ -1,0 +1,12 @@
+{
+  "name" : "vulkantutorialcpp",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "cd4c3d7bf4094dbe011db35d88ba2d66c9de3d95",
+  "dependencies" : [ {
+    "name" : "glfw3",
+    "version>=" : "3.4"
+  }, {
+    "name" : "glm",
+    "version>=" : "1.0.1#2"
+  } ]
+}
