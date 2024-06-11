@@ -1,71 +1,37 @@
 //
 // Created by hetan on 6/10/2024.
 //
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 
 #include "VkManager.h"
 
 #include <iostream>
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+
 VkManager::VkManager()
 {
-    CreateInstance();
 }
 
 VkManager::~VkManager()
 {
 
-    m_Instance.destroy();
 }
 
 void VkManager::CreateInstance()
 {
-#ifdef NDEBUG
-    if (!m_ValidationLayersManager.CheckValidationLayerSupport())
-    {
-        throw std::runtime_error("Validation layers requested but unavailable.");
-    }
-#endif
+    VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
-    uint32_t glfwExtensionCount{};
-    const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    vk::ApplicationInfo applicationInfo( AppName.c_str(), 1, EngineName.c_str(), 1, VK_API_VERSION_1_1 );
+    vk::InstanceCreateInfo instanceCreateInfo( {}, &applicationInfo );
+    vk::Instance instance = vk::createInstance( instanceCreateInfo );
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(instance);
 
-    std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-    std::vector<vk::ExtensionProperties> vkExtensions = vk::enumerateInstanceExtensionProperties();
-
-    for (const auto &extension: vkExtensions)
-    {
-        std::cout << extension.extensionName << std::endl;
-    }
-
-    vk::ApplicationInfo appInfo{
-        AppName.c_str(),
-        1,
-        EngineName.c_str(),
-        1,
-        VK_API_VERSION_1_3,
-    };
-
-    vk::InstanceCreateInfo createInfo{
-        vk::InstanceCreateFlags(),
-        &appInfo,
-        {},
-        {},
-        static_cast<uint32_t>(extensions.size()),
-        extensions.data(),
-    };
-
-#ifdef NDEBUG
-        createInfo.enabledLayerCount = m_ValidationLayersManager.validationLayers.size();
-        createInfo.ppEnabledLayerNames = m_ValidationLayersManager.validationLayers.data();
-#endif
-
-    if (vk::createInstance(&createInfo, nullptr, &m_Instance) != vk::Result::eSuccess)
-    {
-        throw std::runtime_error("Failed to create Vulkan instance.");
-    }
+    instance.destroy();
 }
 
 void VkManager::Run()
 {
+    CreateInstance();
     m_WindowManager.DoLoop();
 }

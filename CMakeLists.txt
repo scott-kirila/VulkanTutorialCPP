@@ -8,9 +8,7 @@ add_executable(VulkanTutorialCPP main.cpp
         WindowManager.h
         VkManager.cpp
         VkManager.h
-        VkManager.h
         ValidationLayersManager.cpp
-        ValidationLayersManager.h
         ValidationLayersManager.h)
 
 find_package(glfw3 CONFIG REQUIRED)

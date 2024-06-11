@@ -4,17 +4,9 @@
 
 #ifndef VALIDATIONLAYERSMANAGER_H
 #define VALIDATIONLAYERSMANAGER_H
-#include <vector>
 
+class ValidationLayersManager {
 
-struct ValidationLayersManager {
-    bool CheckValidationLayerSupport() const;
-
-    const std::vector<const char*> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
-    };
 };
-
-
 
 #endif //VALIDATIONLAYERSMANAGER_H
