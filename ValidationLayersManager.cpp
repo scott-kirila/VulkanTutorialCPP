@@ -62,7 +62,7 @@ bool ValidationLayersManager::CheckValidationLayerSupport() const
     return true;
 }
 
-void ValidationLayersManager::SetupDebugMessenger(vk::Instance& instance)
+void ValidationLayersManager::SetupDebugMessenger(const vk::Instance& instance)
 {
     if (CreateDebugUtilsMessengerEXT(instance,
         &m_DebugCreateInfo,

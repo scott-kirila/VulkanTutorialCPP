@@ -14,7 +14,7 @@ struct ValidationLayersManager {
 
     [[nodiscard]] bool CheckValidationLayerSupport() const;
 
-    void SetupDebugMessenger(vk::Instance &instance);
+    void SetupDebugMessenger(const vk::Instance &instance);
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -22,14 +22,14 @@ struct ValidationLayersManager {
         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData);
 
-    vk::DebugUtilsMessengerCreateInfoEXT GenerateDebugMessengerCreateInfo();
+    static vk::DebugUtilsMessengerCreateInfoEXT GenerateDebugMessengerCreateInfo();
 
     const std::vector<const char*> m_ValidationLayers = {
         "VK_LAYER_KHRONOS_validation",
     };
 
-    VkDebugUtilsMessengerEXT m_DebugMessenger;
-    VkDebugUtilsMessengerCreateInfoEXT m_DebugCreateInfo;
+    VkDebugUtilsMessengerEXT m_DebugMessenger{};
+    VkDebugUtilsMessengerCreateInfoEXT m_DebugCreateInfo{};
 };
 
 #endif //VALIDATIONLAYERSMANAGER_H

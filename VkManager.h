@@ -16,7 +16,7 @@ public:
 
     void Run();
 
-    std::vector<const char *> GetRequiredExtensions();
+    static std::vector<const char *> GetRequiredExtensions();
 
 private:
     void CreateInstance();
