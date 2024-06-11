@@ -5,10 +5,9 @@
 #ifndef VKMANAGER_H
 #define VKMANAGER_H
 
+#include "ValidationLayersManager.h"
 #include "vulkan/vulkan.hpp"
 #include "WindowManager.h"
-
-inline vk::DispatchLoaderDynamic dldi;
 
 class VkManager {
 public:
@@ -17,15 +16,18 @@ public:
 
     void Run();
 
+    std::vector<const char *> GetRequiredExtensions();
+
 private:
     void CreateInstance();
 
     std::string AppName = "Vulkan";
     std::string EngineName = "Vulkan.hpp";
 
-    WindowManager m_WindowManager{};
-    vk::DynamicLoader m_DynamicLoader{};
-    vk::Instance m_Instance{};
+    WindowManager m_WindowManager;
+    vk::DebugUtilsMessengerEXT m_DebugMessenger;
+    ValidationLayersManager m_ValidationManager;
+    vk::Instance m_Instance;
 };
 
 
