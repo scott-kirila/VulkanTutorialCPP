@@ -25,8 +25,9 @@ private:
     std::string EngineName = "Vulkan.hpp";
 
     WindowManager m_WindowManager;
-    vk::DebugUtilsMessengerEXT m_DebugMessenger;
+    #ifndef NDEBUG
     ValidationLayersManager m_ValidationManager;
+    #endif
     vk::Instance m_Instance;
 };
 

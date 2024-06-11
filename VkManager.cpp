@@ -12,10 +12,16 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 VkManager::VkManager()
 {
     CreateInstance();
+    #ifndef NDEBUG
+    m_ValidationManager.SetupDebugMessenger(m_Instance);
+    #endif
 }
 
 VkManager::~VkManager()
 {
+    #ifndef NDEBUG
+    m_Instance.destroyDebugUtilsMessengerEXT(m_ValidationManager.m_DebugMessenger);
+    #endif
     m_Instance.destroy();
 }
 
@@ -58,6 +64,7 @@ void VkManager::CreateInstance()
     #ifndef NDEBUG
     createInfo.enabledLayerCount = m_ValidationManager.m_ValidationLayers.size();
     createInfo.ppEnabledLayerNames = m_ValidationManager.m_ValidationLayers.data();
+    createInfo.pNext = &m_ValidationManager.m_DebugCreateInfo;
     #endif
 
     m_Instance = vk::createInstance(createInfo);
