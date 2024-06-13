@@ -1,5 +1,5 @@
 //
-// Created by hetan on 6/12/2024.
+// Created by Scott Kirila on 6/12/2024.
 //
 
 #include "DeviceManager.h"
@@ -105,7 +105,7 @@ void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validati
     m_LogicalDevice.getQueue(indices.m_PresentFamily.value(), 0, &m_PresentQueue);
 }
 
-void DeviceManager::CreateSurface(const vk::Instance instance)
+void DeviceManager::CreateSurface(const vk::Instance& instance)
 {
     if (glfwCreateWindowSurface(instance, m_WindowManager.m_Window, nullptr,
         reinterpret_cast<VkSurfaceKHR*>(&m_Surface)) != VK_SUCCESS) {
@@ -203,7 +203,7 @@ void DeviceManager::CreateImageViews()
     }
 }
 
-bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice device) const
+bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice& device) const
 {
     const QueueFamilyIndices indices = FindQueueFamilies(device);
 

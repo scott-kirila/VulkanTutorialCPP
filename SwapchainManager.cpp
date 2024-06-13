@@ -1,14 +1,14 @@
 //
-// Created by hetan on 6/13/2024.
+// Created by Scott Kirila on 6/13/2024.
 //
 
 #include "SwapchainManager.h"
 
 #include <set>
 
-bool SwapchainManager::CheckDeviceExtensionSupport(const vk::PhysicalDevice device) const
+bool SwapchainManager::CheckDeviceExtensionSupport(const vk::PhysicalDevice& device) const
 {
-    std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
+    const std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
     std::set<std::string> requiredExtensions(m_DeviceExtensions.begin(), m_DeviceExtensions.end());
 
     for (const auto& extension : availableExtensions)
@@ -19,7 +19,7 @@ bool SwapchainManager::CheckDeviceExtensionSupport(const vk::PhysicalDevice devi
     return requiredExtensions.empty();
 }
 
-SwapchainSupportDetails SwapchainManager::QuerySwapchainSupport(const vk::PhysicalDevice device, vk::SurfaceKHR surface)
+SwapchainSupportDetails SwapchainManager::QuerySwapchainSupport(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface)
 {
     auto details = SwapchainSupportDetails(
         device.getSurfaceCapabilitiesKHR(surface),

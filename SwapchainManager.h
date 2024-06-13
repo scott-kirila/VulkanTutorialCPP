@@ -1,5 +1,5 @@
 //
-// Created by hetan on 6/13/2024.
+// Created by Scott Kirila on 6/13/2024.
 //
 
 #ifndef SWAPCHAINMANAGER_H
@@ -16,11 +16,10 @@ struct SwapchainSupportDetails
     std::vector<vk::PresentModeKHR> m_PresentModes;
 };
 
-class SwapchainManager {
-public:
-    [[nodiscard]] bool CheckDeviceExtensionSupport(vk::PhysicalDevice device) const;
+struct SwapchainManager {
+    [[nodiscard]] bool CheckDeviceExtensionSupport(const vk::PhysicalDevice& device) const;
 
-    [[nodiscard]] static SwapchainSupportDetails QuerySwapchainSupport(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+    [[nodiscard]] static SwapchainSupportDetails QuerySwapchainSupport(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
 
     // Swapchain settings
     static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);

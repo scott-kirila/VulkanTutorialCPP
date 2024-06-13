@@ -1,5 +1,5 @@
 //
-// Created by hetan on 6/10/2024.
+// Created by Scott Kirila on 6/10/2024.
 //
 
 #include "ValidationLayersManager.h"

@@ -1,6 +1,7 @@
 //
-// Created by hetan on 6/10/2024.
+// Created by Scott Kirila on 6/10/2024.
 //
+
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 
 #include "VkManager.h"

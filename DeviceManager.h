@@ -1,5 +1,5 @@
 //
-// Created by hetan on 6/12/2024.
+// Created by Scott Kirila on 6/12/2024.
 //
 
 #ifndef DEVICEMANAGER_H
@@ -28,7 +28,7 @@ public:
 
     void CreateLogicalDevice(const std::vector<const char *>& validationLayers);
 
-    void CreateSurface(vk::Instance instance);
+    void CreateSurface(const vk::Instance& instance);
 
     void CreateSwapchain();
 
@@ -46,7 +46,7 @@ public:
 
 private:
 
-    [[nodiscard]] bool IsDeviceSuitable(vk::PhysicalDevice device) const;
+    [[nodiscard]] bool IsDeviceSuitable(const vk::PhysicalDevice& device) const;
 };
 
 #endif //DEVICEMANAGER_H
