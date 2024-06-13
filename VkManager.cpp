@@ -18,17 +18,18 @@ VkManager::VkManager()
     m_DeviceManager.CreateSurface(m_Instance);
     m_DeviceManager.PickPhysicalDevice(m_Instance);
     m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers);
-    CreateSwapchain();
+    // CreateSwapchain();
+    m_DeviceManager.CreateSwapchain();
 }
 
 VkManager::~VkManager()
 {
-    for (const auto imageView : m_SwapchainImageViews)
+    for (const auto imageView : m_DeviceManager.m_SwapchainManager.m_SwapchainImageViews)
     {
         m_DeviceManager.m_LogicalDevice.destroyImageView(imageView);
     }
 
-    m_DeviceManager.m_LogicalDevice.destroySwapchainKHR(m_Swapchain);
+    m_DeviceManager.m_LogicalDevice.destroySwapchainKHR(m_DeviceManager.m_SwapchainManager.m_Swapchain);
     m_DeviceManager.Destroy();
     #ifndef NDEBUG
     m_Instance.destroyDebugUtilsMessengerEXT(m_ValidationManager.m_DebugMessenger);
@@ -83,101 +84,11 @@ void VkManager::CreateInstance()
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
 }
 
-void VkManager::CreateSwapchain()
-{
-    auto swapchainSupport = m_DeviceManager.QuerySwapchainSupport(m_DeviceManager.m_PhysicalDevice);
-
-    vk::SurfaceFormatKHR surfaceFormat = m_DeviceManager.ChooseSwapSurfaceFormat(swapchainSupport.m_Formats);
-    vk::PresentModeKHR presentMode = m_DeviceManager.ChooseSwapPresentMode(swapchainSupport.m_PresentModes);
-    vk::Extent2D extent = m_DeviceManager.ChooseSwapExtent(swapchainSupport.m_Capabilities);
-
-    uint32_t imageCount = swapchainSupport.m_Capabilities.minImageCount + 1;
-
-    if (swapchainSupport.m_Capabilities.maxImageCount > 0 && imageCount > swapchainSupport.m_Capabilities.maxImageCount)
-    {
-        imageCount = swapchainSupport.m_Capabilities.maxImageCount;
-    }
-
-    auto createInfo = vk::SwapchainCreateInfoKHR(
-        {},
-        m_DeviceManager.m_Surface,
-        imageCount,
-        surfaceFormat.format,
-        surfaceFormat.colorSpace,
-        extent,
-        1,
-        vk::ImageUsageFlagBits::eColorAttachment
-    );
-
-    auto indices = m_DeviceManager.FindQueueFamilies(m_DeviceManager.m_PhysicalDevice);
-    uint32_t queueFamilyIndices[] = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
-
-    if (indices.m_GraphicsFamily != indices.m_PresentFamily)
-    {
-        createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
-        createInfo.queueFamilyIndexCount = 2;
-        createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    }
-    else
-    {
-        createInfo.imageSharingMode = vk::SharingMode::eExclusive;
-    }
-
-    createInfo.preTransform = swapchainSupport.m_Capabilities.currentTransform;
-    createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-    createInfo.presentMode = presentMode;
-    createInfo.clipped = vk::True;
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-    if (m_DeviceManager.m_LogicalDevice.createSwapchainKHR(&createInfo, nullptr, &m_Swapchain)
-        != vk::Result::eSuccess)
-    {
-        throw std::runtime_error("Failed to create swapchain.");
-    }
-
-    m_SwapchainImages = m_DeviceManager.m_LogicalDevice.getSwapchainImagesKHR(m_Swapchain);
-
-    m_SwapchainImageFormat = surfaceFormat.format;
-    m_SwapchainExtent = extent;
-}
-
-void VkManager::CreateImageViews()
-{
-    m_SwapchainImageViews.resize(m_SwapchainImages.size());
-
-    for (size_t i = 0; i < m_SwapchainImages.size(); i++)
-    {
-        auto createInfo = vk::ImageViewCreateInfo(
-            {},
-            m_SwapchainImages[i],
-            vk::ImageViewType::e2D,
-            m_SwapchainImageFormat,
-            {
-                vk::ComponentSwizzle::eIdentity,
-                vk::ComponentSwizzle::eIdentity,
-                vk::ComponentSwizzle::eIdentity,
-                vk::ComponentSwizzle::eIdentity },
-            {
-                vk::ImageAspectFlagBits::eColor,
-                0,
-                1,
-                0,
-                1 }
-        );
-
-        if (m_DeviceManager.m_LogicalDevice.createImageView(&createInfo, nullptr, &m_SwapchainImageViews[i])
-            != vk::Result::eSuccess)
-        {
-            throw std::runtime_error("Failed to create image views.");
-        }
-    }
-}
-
 void VkManager::CreateGraphicsPipeline()
 {
 }
 
-void VkManager::Run()
+void VkManager::Run() const
 {
     m_DeviceManager.m_WindowManager.DoLoop();
 }

@@ -11,7 +11,10 @@ add_executable(VulkanTutorialCPP main.cpp
         ValidationLayersManager.cpp
         ValidationLayersManager.h
         DeviceManager.cpp
-        DeviceManager.h)
+        DeviceManager.h
+        SwapchainManager.cpp
+        SwapchainManager.h
+        SwapchainManager.h)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)

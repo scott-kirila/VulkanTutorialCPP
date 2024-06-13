@@ -5,8 +5,9 @@
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
-#include "WindowManager.h"
 #include "vulkan/vulkan.hpp"
+
+#include "SwapchainManager.h"
 
 struct QueueFamilyIndices
 {
@@ -19,13 +20,6 @@ struct QueueFamilyIndices
     std::optional<uint32_t> m_PresentFamily;
 };
 
-struct SwapchainSupportDetails
-{
-    vk::SurfaceCapabilitiesKHR m_Capabilities;
-    std::vector<vk::SurfaceFormatKHR> m_Formats;
-    std::vector<vk::PresentModeKHR> m_PresentModes;
-};
-
 class DeviceManager {
 public:
     void Destroy() const;
@@ -36,37 +30,23 @@ public:
 
     void CreateSurface(vk::Instance instance);
 
-    [[nodiscard]] SwapchainSupportDetails QuerySwapchainSupport(vk::PhysicalDevice device) const;
+    void CreateSwapchain();
 
-    // Swapchain settings
-    vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
-
-    vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
-
-    vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
+    void CreateImageViews();
 
     [[nodiscard]] QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device) const;
-
-    const std::vector<const char*> m_DeviceExtensions = {
-        vk::KHRSwapchainExtensionName,
-    };
 
     WindowManager m_WindowManager;
     vk::PhysicalDevice m_PhysicalDevice;
     vk::Device m_LogicalDevice;
     vk::SurfaceKHR m_Surface;
+    SwapchainManager m_SwapchainManager;
     vk::Queue m_GraphicsQueue;
     vk::Queue m_PresentQueue;
 
 private:
 
-    bool IsDeviceSuitable(vk::PhysicalDevice device);
-
-    [[nodiscard]] bool CheckDeviceExtensionSupport(vk::PhysicalDevice device) const;
-
-
+    [[nodiscard]] bool IsDeviceSuitable(vk::PhysicalDevice device) const;
 };
-
-
 
 #endif //DEVICEMANAGER_H
