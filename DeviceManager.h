@@ -36,7 +36,7 @@ public:
 
     void CreateSurface(vk::Instance instance);
 
-    SwapchainSupportDetails QuerySwapchainSupport(vk::PhysicalDevice device);
+    [[nodiscard]] SwapchainSupportDetails QuerySwapchainSupport(vk::PhysicalDevice device) const;
 
     // Swapchain settings
     vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
@@ -45,7 +45,7 @@ public:
 
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
 
-    QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device);
+    [[nodiscard]] QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device) const;
 
     const std::vector<const char*> m_DeviceExtensions = {
         vk::KHRSwapchainExtensionName,
@@ -62,7 +62,7 @@ private:
 
     bool IsDeviceSuitable(vk::PhysicalDevice device);
 
-    bool CheckDeviceExtensionSupport(vk::PhysicalDevice device);
+    [[nodiscard]] bool CheckDeviceExtensionSupport(vk::PhysicalDevice device) const;
 
 
 };

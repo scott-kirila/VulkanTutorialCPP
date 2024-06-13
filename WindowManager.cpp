@@ -21,7 +21,7 @@ WindowManager::~WindowManager()
     glfwTerminate();
 }
 
-void WindowManager::GetFramebufferSize(int &width, int &height)
+void WindowManager::GetFramebufferSize(int &width, int &height) const
 {
     glfwGetFramebufferSize(m_Window, &width, &height);
 }

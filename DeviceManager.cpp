@@ -11,7 +11,7 @@ void DeviceManager::Destroy() const
     m_LogicalDevice.destroy();
 }
 
-QueueFamilyIndices DeviceManager::FindQueueFamilies(vk::PhysicalDevice device)
+QueueFamilyIndices DeviceManager::FindQueueFamilies(const vk::PhysicalDevice device) const
 {
     QueueFamilyIndices indices;
 
@@ -129,7 +129,7 @@ bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice device)
     return indices.IsComplete() && swapchainAdequate;
 }
 
-bool DeviceManager::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
+bool DeviceManager::CheckDeviceExtensionSupport(const vk::PhysicalDevice device) const
 {
     std::vector<vk::ExtensionProperties> availableExtensions = device.enumerateDeviceExtensionProperties();
     std::set<std::string> requiredExtensions(m_DeviceExtensions.begin(), m_DeviceExtensions.end());
@@ -142,7 +142,7 @@ bool DeviceManager::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
     return requiredExtensions.empty();
 }
 
-SwapchainSupportDetails DeviceManager::QuerySwapchainSupport(vk::PhysicalDevice device)
+SwapchainSupportDetails DeviceManager::QuerySwapchainSupport(const vk::PhysicalDevice device) const
 {
     auto details = SwapchainSupportDetails(
         device.getSurfaceCapabilitiesKHR(m_Surface),

@@ -23,7 +23,7 @@ VkManager::VkManager()
 
 VkManager::~VkManager()
 {
-    for (auto imageView : m_SwapchainImageViews)
+    for (const auto imageView : m_SwapchainImageViews)
     {
         m_DeviceManager.m_LogicalDevice.destroyImageView(imageView);
     }

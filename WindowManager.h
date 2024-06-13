@@ -13,7 +13,7 @@ public:
     WindowManager();
     ~WindowManager();
 
-    void GetFramebufferSize(int& width, int& height);
+    void GetFramebufferSize(int& width, int& height) const;
 
     void DoLoop() const;
 
