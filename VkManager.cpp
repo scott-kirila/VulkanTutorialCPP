@@ -26,6 +26,11 @@ VkManager::VkManager()
 
 VkManager::~VkManager()
 {
+    for (auto imageView : m_SwapchainImageViews)
+    {
+        m_DeviceManager.m_LogicalDevice.destroyImageView(imageView);
+    }
+
     m_DeviceManager.m_LogicalDevice.destroySwapchainKHR(m_Swapchain);
     m_DeviceManager.Destroy();
     #ifndef NDEBUG
@@ -145,6 +150,38 @@ void VkManager::CreateSwapchain()
 
     m_SwapchainImageFormat = surfaceFormat.format;
     m_SwapchainExtent = extent;
+}
+
+void VkManager::CreateImageViews()
+{
+    m_SwapchainImageViews.resize(m_SwapchainImages.size());
+
+    for (size_t i = 0; i < m_SwapchainImages.size(); i++)
+    {
+        auto createInfo = vk::ImageViewCreateInfo(
+            {},
+            m_SwapchainImages[i],
+            vk::ImageViewType::e2D,
+            m_SwapchainImageFormat,
+            {
+                vk::ComponentSwizzle::eIdentity,
+                vk::ComponentSwizzle::eIdentity,
+                vk::ComponentSwizzle::eIdentity,
+                vk::ComponentSwizzle::eIdentity },
+            {
+                vk::ImageAspectFlagBits::eColor,
+                0,
+                1,
+                0,
+                1 }
+        );
+
+        if (m_DeviceManager.m_LogicalDevice.createImageView(&createInfo, nullptr, &m_SwapchainImageViews[i])
+            != vk::Result::eSuccess)
+        {
+            throw std::runtime_error("Failed to create image views.");
+        }
+    }
 }
 
 void VkManager::Run()
