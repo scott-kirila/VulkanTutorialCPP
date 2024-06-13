@@ -105,7 +105,7 @@ void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validati
     m_LogicalDevice.getQueue(indices.m_PresentFamily.value(), 0, &m_PresentQueue);
 }
 
-void DeviceManager::CreateSurface(vk::Instance instance)
+void DeviceManager::CreateSurface(const vk::Instance instance)
 {
     if (glfwCreateWindowSurface(instance, m_WindowManager.m_Window, nullptr,
         reinterpret_cast<VkSurfaceKHR*>(&m_Surface)) != VK_SUCCESS) {
@@ -117,9 +117,9 @@ void DeviceManager::CreateSwapchain()
 {
     auto swapchainSupport = SwapchainManager::QuerySwapchainSupport(m_PhysicalDevice, m_Surface);
 
-    vk::SurfaceFormatKHR surfaceFormat = SwapchainManager::ChooseSwapSurfaceFormat(swapchainSupport.m_Formats);
-    vk::PresentModeKHR presentMode = SwapchainManager::ChooseSwapPresentMode(swapchainSupport.m_PresentModes);
-    vk::Extent2D extent = SwapchainManager::ChooseSwapExtent(swapchainSupport.m_Capabilities, m_WindowManager);
+    const vk::SurfaceFormatKHR surfaceFormat = SwapchainManager::ChooseSwapSurfaceFormat(swapchainSupport.m_Formats);
+    const vk::PresentModeKHR presentMode = SwapchainManager::ChooseSwapPresentMode(swapchainSupport.m_PresentModes);
+    const vk::Extent2D extent = SwapchainManager::ChooseSwapExtent(swapchainSupport.m_Capabilities, m_WindowManager);
 
     uint32_t imageCount = swapchainSupport.m_Capabilities.minImageCount + 1;
 
@@ -139,8 +139,8 @@ void DeviceManager::CreateSwapchain()
         vk::ImageUsageFlagBits::eColorAttachment
     );
 
-    auto indices = FindQueueFamilies(m_PhysicalDevice);
-    uint32_t queueFamilyIndices[] = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
+    const auto indices = FindQueueFamilies(m_PhysicalDevice);
+    const uint32_t queueFamilyIndices[] = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
 
     if (indices.m_GraphicsFamily != indices.m_PresentFamily)
     {
@@ -212,7 +212,7 @@ bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice device) const
 
     if (extensionsSupported)
     {
-        auto swapchainSupport = SwapchainManager::QuerySwapchainSupport(device, m_Surface);
+        const auto swapchainSupport = SwapchainManager::QuerySwapchainSupport(device, m_Surface);
         swapchainAdequate = !swapchainSupport.m_Formats.empty() && !swapchainSupport.m_PresentModes.empty();
     }
 
