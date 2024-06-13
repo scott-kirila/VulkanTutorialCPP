@@ -5,13 +5,15 @@
 #ifndef WINDOWMANAGER_H
 #define WINDOWMANAGER_H
 
-// #define GLFW_INCLUDE_VULKAN
+#define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 
 class WindowManager {
 public:
     WindowManager();
     ~WindowManager();
+
+    void GetFramebufferSize(int& width, int& height);
 
     void DoLoop() const;
 

@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#define GLFW_INCLUDE_VULKAN
+// #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
@@ -21,10 +21,12 @@ VkManager::VkManager()
     CreateSurface();
     m_DeviceManager.PickPhysicalDevice(m_Instance, m_Surface);
     m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers, m_Surface);
+    CreateSwapchain();
 }
 
 VkManager::~VkManager()
 {
+    m_DeviceManager.m_LogicalDevice.destroySwapchainKHR(m_Swapchain);
     m_DeviceManager.Destroy();
     #ifndef NDEBUG
     m_Instance.destroyDebugUtilsMessengerEXT(m_ValidationManager.m_DebugMessenger);
@@ -81,15 +83,73 @@ void VkManager::CreateInstance()
 
 void VkManager::CreateSurface()
 {
-    if (glfwCreateWindowSurface(m_Instance, m_WindowManager.m_Window, nullptr,
+    if (glfwCreateWindowSurface(m_Instance, m_DeviceManager.m_WindowManager.m_Window, nullptr,
         reinterpret_cast<VkSurfaceKHR*>(&m_Surface)) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }
 }
 
+void VkManager::CreateSwapchain()
+{
+    auto swapchainSupport = m_DeviceManager.QuerySwapchainSupport(m_DeviceManager.m_PhysicalDevice, m_Surface);
+
+    vk::SurfaceFormatKHR surfaceFormat = m_DeviceManager.ChooseSwapSurfaceFormat(swapchainSupport.m_Formats);
+    vk::PresentModeKHR presentMode = m_DeviceManager.ChooseSwapPresentMode(swapchainSupport.m_PresentModes);
+    vk::Extent2D extent = m_DeviceManager.ChooseSwapExtent(swapchainSupport.m_Capabilities);
+
+    uint32_t imageCount = swapchainSupport.m_Capabilities.minImageCount + 1;
+
+    if (swapchainSupport.m_Capabilities.maxImageCount > 0 && imageCount > swapchainSupport.m_Capabilities.maxImageCount)
+    {
+        imageCount = swapchainSupport.m_Capabilities.maxImageCount;
+    }
+
+    auto createInfo = vk::SwapchainCreateInfoKHR(
+        {},
+        m_Surface,
+        imageCount,
+        surfaceFormat.format,
+        surfaceFormat.colorSpace,
+        extent,
+        1,
+        vk::ImageUsageFlagBits::eColorAttachment
+    );
+
+    auto indices = m_DeviceManager.FindQueueFamilies(m_DeviceManager.m_PhysicalDevice, m_Surface);
+    uint32_t queueFamilyIndices[] = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
+
+    if (indices.m_GraphicsFamily != indices.m_PresentFamily)
+    {
+        createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
+        createInfo.queueFamilyIndexCount = 2;
+        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    }
+    else
+    {
+        createInfo.imageSharingMode = vk::SharingMode::eExclusive;
+    }
+
+    createInfo.preTransform = swapchainSupport.m_Capabilities.currentTransform;
+    createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+    createInfo.presentMode = presentMode;
+    createInfo.clipped = vk::True;
+    createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+    if (m_DeviceManager.m_LogicalDevice.createSwapchainKHR(&createInfo, nullptr, &m_Swapchain)
+        != vk::Result::eSuccess)
+    {
+        throw std::runtime_error("Failed to create swapchain.");
+    }
+
+    m_SwapchainImages = m_DeviceManager.m_LogicalDevice.getSwapchainImagesKHR(m_Swapchain);
+
+    m_SwapchainImageFormat = surfaceFormat.format;
+    m_SwapchainExtent = extent;
+}
+
 void VkManager::Run()
 {
-    m_WindowManager.DoLoop();
+    m_DeviceManager.m_WindowManager.DoLoop();
 }
 
 std::vector<const char *> VkManager::GetRequiredExtensions()

@@ -21,6 +21,11 @@ WindowManager::~WindowManager()
     glfwTerminate();
 }
 
+void WindowManager::GetFramebufferSize(int &width, int &height)
+{
+    glfwGetFramebufferSize(m_Window, &width, &height);
+}
+
 void WindowManager::DoLoop() const
 {
     while (!glfwWindowShouldClose(m_Window))

@@ -8,7 +8,7 @@
 #include "DeviceManager.h"
 #include "ValidationLayersManager.h"
 #include "vulkan/vulkan.hpp"
-#include "WindowManager.h"
+// #include "WindowManager.h"
 
 class VkManager {
 public:
@@ -22,17 +22,21 @@ public:
 private:
     void CreateInstance();
     void CreateSurface();
+    void CreateSwapchain();
 
     std::string AppName = "Vulkan";
     std::string EngineName = "Vulkan.hpp";
 
-    WindowManager m_WindowManager;
     #ifndef NDEBUG
     ValidationLayersManager m_ValidationManager;
     #endif
     vk::Instance m_Instance;
-    vk::SurfaceKHR m_Surface;
     DeviceManager m_DeviceManager;
+    vk::SurfaceKHR m_Surface; // Probably belongs in DeviceManager
+    vk::SwapchainKHR m_Swapchain; // Probably belongs in DeviceManager
+    std::vector<vk::Image> m_SwapchainImages;
+    vk::Format m_SwapchainImageFormat;
+    vk::Extent2D m_SwapchainExtent;
 };
 
 
