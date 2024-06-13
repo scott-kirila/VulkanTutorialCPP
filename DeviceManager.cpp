@@ -5,14 +5,13 @@
 #include "DeviceManager.h"
 
 #include <set>
-// #include <GLFW/glfw3.h>
 
 void DeviceManager::Destroy() const
 {
     m_LogicalDevice.destroy();
 }
 
-QueueFamilyIndices DeviceManager::FindQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface)
+QueueFamilyIndices DeviceManager::FindQueueFamilies(vk::PhysicalDevice device)
 {
     QueueFamilyIndices indices;
 
@@ -26,7 +25,7 @@ QueueFamilyIndices DeviceManager::FindQueueFamilies(vk::PhysicalDevice device, v
             indices.m_GraphicsFamily = i;
         }
 
-        if (device.getSurfaceSupportKHR(i, surface))
+        if (device.getSurfaceSupportKHR(i, m_Surface))
         {
             indices.m_PresentFamily = i;
         }
@@ -39,7 +38,7 @@ QueueFamilyIndices DeviceManager::FindQueueFamilies(vk::PhysicalDevice device, v
     return indices;
 }
 
-void DeviceManager::PickPhysicalDevice(const vk::Instance &instance, const vk::SurfaceKHR surface)
+void DeviceManager::PickPhysicalDevice(const vk::Instance &instance)
 {
     const std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 
@@ -50,7 +49,7 @@ void DeviceManager::PickPhysicalDevice(const vk::Instance &instance, const vk::S
 
     for (const auto& device: physicalDevices)
     {
-        if (IsDeviceSuitable(device, surface))
+        if (IsDeviceSuitable(device))
         {
             m_PhysicalDevice = device;
             break;
@@ -63,9 +62,9 @@ void DeviceManager::PickPhysicalDevice(const vk::Instance &instance, const vk::S
     }
 }
 
-void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validationLayers, vk::SurfaceKHR surface)
+void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validationLayers)
 {
-    QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice, surface);
+    QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
 
     std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamiles = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
@@ -106,16 +105,24 @@ void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validati
     m_LogicalDevice.getQueue(indices.m_PresentFamily.value(), 0, &m_PresentQueue);
 }
 
-bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice device, const vk::SurfaceKHR surface)
+void DeviceManager::CreateSurface(vk::Instance instance)
 {
-    const QueueFamilyIndices indices = FindQueueFamilies(device, surface);
+    if (glfwCreateWindowSurface(instance, m_WindowManager.m_Window, nullptr,
+        reinterpret_cast<VkSurfaceKHR*>(&m_Surface)) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create window surface.");
+        }
+}
+
+bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice device)
+{
+    const QueueFamilyIndices indices = FindQueueFamilies(device);
 
     const bool extensionsSupported = CheckDeviceExtensionSupport(device);
     bool swapchainAdequate = false;
 
     if (extensionsSupported)
     {
-        auto swapchainSupport = QuerySwapchainSupport(device, surface);
+        auto swapchainSupport = QuerySwapchainSupport(device);
         swapchainAdequate = !swapchainSupport.m_Formats.empty() && !swapchainSupport.m_PresentModes.empty();
     }
 
@@ -135,16 +142,12 @@ bool DeviceManager::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
     return requiredExtensions.empty();
 }
 
-SwapchainSupportDetails DeviceManager::QuerySwapchainSupport(vk::PhysicalDevice device, vk::SurfaceKHR surface)
+SwapchainSupportDetails DeviceManager::QuerySwapchainSupport(vk::PhysicalDevice device)
 {
-    // SwapchainSupportDetails details;
-    // details.m_Capabilities = device.getSurfaceCapabilitiesKHR(surface);
-    // details.m_Formats = device.getSurfaceFormatsKHR(surface);
-    // details.m_PresentModes = device.getSurfacePresentModesKHR(surface);
     auto details = SwapchainSupportDetails(
-        device.getSurfaceCapabilitiesKHR(surface),
-        device.getSurfaceFormatsKHR(surface),
-        device.getSurfacePresentModesKHR(surface)
+        device.getSurfaceCapabilitiesKHR(m_Surface),
+        device.getSurfaceFormatsKHR(m_Surface),
+        device.getSurfacePresentModesKHR(m_Surface)
     );
 
     return details;

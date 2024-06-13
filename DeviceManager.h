@@ -30,11 +30,13 @@ class DeviceManager {
 public:
     void Destroy() const;
 
-    void PickPhysicalDevice(const vk::Instance& instance, vk::SurfaceKHR surface);
+    void PickPhysicalDevice(const vk::Instance& instance);
 
-    void CreateLogicalDevice(const std::vector<const char *>& validationLayers, vk::SurfaceKHR surface);
+    void CreateLogicalDevice(const std::vector<const char *>& validationLayers);
 
-    SwapchainSupportDetails QuerySwapchainSupport(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+    void CreateSurface(vk::Instance instance);
+
+    SwapchainSupportDetails QuerySwapchainSupport(vk::PhysicalDevice device);
 
     // Swapchain settings
     vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
@@ -43,7 +45,7 @@ public:
 
     vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
 
-    QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+    QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device);
 
     const std::vector<const char*> m_DeviceExtensions = {
         vk::KHRSwapchainExtensionName,
@@ -52,12 +54,13 @@ public:
     WindowManager m_WindowManager;
     vk::PhysicalDevice m_PhysicalDevice;
     vk::Device m_LogicalDevice;
+    vk::SurfaceKHR m_Surface;
     vk::Queue m_GraphicsQueue;
     vk::Queue m_PresentQueue;
 
 private:
 
-    bool IsDeviceSuitable(vk::PhysicalDevice device, vk::SurfaceKHR surface);
+    bool IsDeviceSuitable(vk::PhysicalDevice device);
 
     bool CheckDeviceExtensionSupport(vk::PhysicalDevice device);
 

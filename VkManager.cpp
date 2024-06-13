@@ -7,9 +7,6 @@
 
 #include <iostream>
 
-// #define GLFW_INCLUDE_VULKAN
-#include "GLFW/glfw3.h"
-
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 VkManager::VkManager()
@@ -18,9 +15,9 @@ VkManager::VkManager()
     #ifndef NDEBUG
     m_ValidationManager.SetupDebugMessenger(m_Instance);
     #endif
-    CreateSurface();
-    m_DeviceManager.PickPhysicalDevice(m_Instance, m_Surface);
-    m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers, m_Surface);
+    m_DeviceManager.CreateSurface(m_Instance);
+    m_DeviceManager.PickPhysicalDevice(m_Instance);
+    m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers);
     CreateSwapchain();
 }
 
@@ -36,7 +33,7 @@ VkManager::~VkManager()
     #ifndef NDEBUG
     m_Instance.destroyDebugUtilsMessengerEXT(m_ValidationManager.m_DebugMessenger);
     #endif
-    m_Instance.destroySurfaceKHR(m_Surface);
+    m_Instance.destroySurfaceKHR(m_DeviceManager.m_Surface);
     m_Instance.destroy();
 }
 
@@ -86,17 +83,9 @@ void VkManager::CreateInstance()
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
 }
 
-void VkManager::CreateSurface()
-{
-    if (glfwCreateWindowSurface(m_Instance, m_DeviceManager.m_WindowManager.m_Window, nullptr,
-        reinterpret_cast<VkSurfaceKHR*>(&m_Surface)) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create window surface!");
-    }
-}
-
 void VkManager::CreateSwapchain()
 {
-    auto swapchainSupport = m_DeviceManager.QuerySwapchainSupport(m_DeviceManager.m_PhysicalDevice, m_Surface);
+    auto swapchainSupport = m_DeviceManager.QuerySwapchainSupport(m_DeviceManager.m_PhysicalDevice);
 
     vk::SurfaceFormatKHR surfaceFormat = m_DeviceManager.ChooseSwapSurfaceFormat(swapchainSupport.m_Formats);
     vk::PresentModeKHR presentMode = m_DeviceManager.ChooseSwapPresentMode(swapchainSupport.m_PresentModes);
@@ -111,7 +100,7 @@ void VkManager::CreateSwapchain()
 
     auto createInfo = vk::SwapchainCreateInfoKHR(
         {},
-        m_Surface,
+        m_DeviceManager.m_Surface,
         imageCount,
         surfaceFormat.format,
         surfaceFormat.colorSpace,
@@ -120,7 +109,7 @@ void VkManager::CreateSwapchain()
         vk::ImageUsageFlagBits::eColorAttachment
     );
 
-    auto indices = m_DeviceManager.FindQueueFamilies(m_DeviceManager.m_PhysicalDevice, m_Surface);
+    auto indices = m_DeviceManager.FindQueueFamilies(m_DeviceManager.m_PhysicalDevice);
     uint32_t queueFamilyIndices[] = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
 
     if (indices.m_GraphicsFamily != indices.m_PresentFamily)
@@ -182,6 +171,10 @@ void VkManager::CreateImageViews()
             throw std::runtime_error("Failed to create image views.");
         }
     }
+}
+
+void VkManager::CreateGraphicsPipeline()
+{
 }
 
 void VkManager::Run()
