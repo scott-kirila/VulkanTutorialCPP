@@ -7,6 +7,9 @@
 
 #include <iostream>
 
+#define GLFW_INCLUDE_VULKAN
+#include "GLFW/glfw3.h"
+
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 VkManager::VkManager()
@@ -15,8 +18,9 @@ VkManager::VkManager()
     #ifndef NDEBUG
     m_ValidationManager.SetupDebugMessenger(m_Instance);
     #endif
-    m_DeviceManager.PickPhysicalDevice(m_Instance);
-    m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers);
+    CreateSurface();
+    m_DeviceManager.PickPhysicalDevice(m_Instance, m_Surface);
+    m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers, m_Surface);
 }
 
 VkManager::~VkManager()
@@ -25,6 +29,7 @@ VkManager::~VkManager()
     #ifndef NDEBUG
     m_Instance.destroyDebugUtilsMessengerEXT(m_ValidationManager.m_DebugMessenger);
     #endif
+    m_Instance.destroySurfaceKHR(m_Surface);
     m_Instance.destroy();
 }
 
@@ -72,6 +77,14 @@ void VkManager::CreateInstance()
 
     m_Instance = vk::createInstance(createInfo);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
+}
+
+void VkManager::CreateSurface()
+{
+    if (glfwCreateWindowSurface(m_Instance, m_WindowManager.m_Window, nullptr,
+        reinterpret_cast<VkSurfaceKHR*>(&m_Surface)) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create window surface!");
+    }
 }
 
 void VkManager::Run()

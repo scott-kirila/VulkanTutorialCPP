@@ -4,16 +4,18 @@
 
 #include "DeviceManager.h"
 
-void DeviceManager::Destroy()
+#include <set>
+
+void DeviceManager::Destroy() const
 {
     m_LogicalDevice.destroy();
 }
 
-QueueFamilyIndices DeviceManager::FindQueueFamilies(vk::PhysicalDevice device)
+QueueFamilyIndices DeviceManager::FindQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface)
 {
     QueueFamilyIndices indices;
 
-    std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
+    const std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
 
     int i = 0;
     for (const auto& queueFamily : queueFamilies)
@@ -23,19 +25,22 @@ QueueFamilyIndices DeviceManager::FindQueueFamilies(vk::PhysicalDevice device)
             indices.m_GraphicsFamily = i;
         }
 
+        if (device.getSurfaceSupportKHR(i, surface))
+        {
+            indices.m_PresentFamily = i;
+        }
+
         if (indices.IsComplete()) break;
 
         i++;
     }
 
-
-
     return indices;
 }
 
-void DeviceManager::PickPhysicalDevice(vk::Instance &instance)
+void DeviceManager::PickPhysicalDevice(const vk::Instance &instance, const vk::SurfaceKHR surface)
 {
-    std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
+    const std::vector<vk::PhysicalDevice> physicalDevices = instance.enumeratePhysicalDevices();
 
     if (physicalDevices.empty())
     {
@@ -44,7 +49,7 @@ void DeviceManager::PickPhysicalDevice(vk::Instance &instance)
 
     for (const auto& device: physicalDevices)
     {
-        if (IsDeviceSuitable(device))
+        if (IsDeviceSuitable(device, surface))
         {
             m_PhysicalDevice = device;
             break;
@@ -57,22 +62,30 @@ void DeviceManager::PickPhysicalDevice(vk::Instance &instance)
     }
 }
 
-void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validationLayers)
+void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validationLayers, vk::SurfaceKHR surface)
 {
-    QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
+    QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice, surface);
+
+    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+    std::set<uint32_t> uniqueQueueFamiles = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
 
     float queuePriority = 1.0f;
-    auto queueCreateInfo = vk::DeviceQueueCreateInfo(
-        {},
-        indices.m_GraphicsFamily.value(),
-        1,
-        &queuePriority
-    );
+    for (uint32_t queueFamily : uniqueQueueFamiles)
+    {
+        queueCreateInfos.emplace_back(
+            vk::DeviceQueueCreateInfo(
+                {},
+                queueFamily,
+                1,
+                &queuePriority
+            )
+        );
+    }
 
     vk::PhysicalDeviceFeatures physicalDeviceFeatures{};
     auto createInfo = vk::DeviceCreateInfo(
         {},
-        queueCreateInfo,
+        queueCreateInfos,
         {},
         {},
         &physicalDeviceFeatures
@@ -89,11 +102,12 @@ void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validati
     }
 
     m_LogicalDevice.getQueue(indices.m_GraphicsFamily.value(), 0, &m_GraphicsQueue);
+    m_LogicalDevice.getQueue(indices.m_PresentFamily.value(), 0, &m_PresentQueue);
 }
 
-bool DeviceManager::IsDeviceSuitable(vk::PhysicalDevice device)
+bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice device, const vk::SurfaceKHR surface)
 {
-    QueueFamilyIndices indices = FindQueueFamilies(device);
+    const QueueFamilyIndices indices = FindQueueFamilies(device, surface);
 
     return indices.IsComplete();
 }

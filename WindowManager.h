@@ -13,7 +13,7 @@ public:
     WindowManager();
     ~WindowManager();
 
-    void DoLoop();
+    void DoLoop() const;
 
     GLFWwindow* m_Window;
 

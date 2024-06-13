@@ -21,6 +21,7 @@ public:
 
 private:
     void CreateInstance();
+    void CreateSurface();
 
     std::string AppName = "Vulkan";
     std::string EngineName = "Vulkan.hpp";
@@ -30,6 +31,7 @@ private:
     ValidationLayersManager m_ValidationManager;
     #endif
     vk::Instance m_Instance;
+    vk::SurfaceKHR m_Surface;
     DeviceManager m_DeviceManager;
 };
 

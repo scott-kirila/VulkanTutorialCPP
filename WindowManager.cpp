@@ -21,7 +21,7 @@ WindowManager::~WindowManager()
     glfwTerminate();
 }
 
-void WindowManager::DoLoop()
+void WindowManager::DoLoop() const
 {
     while (!glfwWindowShouldClose(m_Window))
     {
