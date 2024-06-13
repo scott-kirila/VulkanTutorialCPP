@@ -15,10 +15,13 @@ VkManager::VkManager()
     #ifndef NDEBUG
     m_ValidationManager.SetupDebugMessenger(m_Instance);
     #endif
+    m_DeviceManager.PickPhysicalDevice(m_Instance);
+    m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers);
 }
 
 VkManager::~VkManager()
 {
+    m_DeviceManager.Destroy();
     #ifndef NDEBUG
     m_Instance.destroyDebugUtilsMessengerEXT(m_ValidationManager.m_DebugMessenger);
     #endif

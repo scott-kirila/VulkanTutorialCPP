@@ -5,6 +5,7 @@
 #ifndef VKMANAGER_H
 #define VKMANAGER_H
 
+#include "DeviceManager.h"
 #include "ValidationLayersManager.h"
 #include "vulkan/vulkan.hpp"
 #include "WindowManager.h"
@@ -29,6 +30,7 @@ private:
     ValidationLayersManager m_ValidationManager;
     #endif
     vk::Instance m_Instance;
+    DeviceManager m_DeviceManager;
 };
 
 
