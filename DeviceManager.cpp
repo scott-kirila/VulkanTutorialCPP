@@ -203,6 +203,16 @@ void DeviceManager::CreateImageViews()
     }
 }
 
+void DeviceManager::CreateRenderPass()
+{
+    m_GraphicsPipeline.CreateRenderPass(m_LogicalDevice, m_SwapchainManager.m_SwapchainImageFormat);
+}
+
+void DeviceManager::CreateGraphicsPipeline()
+{
+    m_GraphicsPipeline.Create(m_LogicalDevice, m_SwapchainManager.m_SwapchainExtent);
+}
+
 bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice& device) const
 {
     const QueueFamilyIndices indices = FindQueueFamilies(device);

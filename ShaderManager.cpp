@@ -30,7 +30,7 @@ std::vector<char> ShaderManager::ReadFile(const std::string &filename)
     return buffer;
 }
 
-vk::ShaderModule ShaderManager::CreateShaderModule(const std::vector<char> &code)
+vk::ShaderModule ShaderManager::CreateShaderModule(const std::vector<char> &code, vk::Device device)
 {
     auto createInfo = vk::ShaderModuleCreateInfo(
         {},
@@ -38,5 +38,5 @@ vk::ShaderModule ShaderManager::CreateShaderModule(const std::vector<char> &code
         reinterpret_cast<const uint32_t*>(code.data())
     );
 
-    vk::ShaderModule shaderModule;
+    return device.createShaderModule(createInfo, nullptr);
 }

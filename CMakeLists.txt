@@ -15,7 +15,9 @@ add_executable(VulkanTutorialCPP main.cpp
         SwapchainManager.cpp
         SwapchainManager.h
         ShaderManager.cpp
-        ShaderManager.h)
+        ShaderManager.h
+        GraphicsPipeline.cpp
+        GraphicsPipeline.h)
 
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)

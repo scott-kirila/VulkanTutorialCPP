@@ -20,7 +20,6 @@ public:
 
 private:
     void CreateInstance();
-    void CreateGraphicsPipeline();
 
     std::string AppName = "Vulkan";
     std::string EngineName = "Vulkan.hpp";

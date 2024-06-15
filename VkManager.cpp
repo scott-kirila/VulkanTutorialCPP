@@ -19,12 +19,17 @@ VkManager::VkManager()
     m_DeviceManager.CreateSurface(m_Instance);
     m_DeviceManager.PickPhysicalDevice(m_Instance);
     m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers);
-    // CreateSwapchain();
     m_DeviceManager.CreateSwapchain();
+    m_DeviceManager.CreateRenderPass();
+    m_DeviceManager.CreateGraphicsPipeline();
 }
 
 VkManager::~VkManager()
 {
+    m_DeviceManager.m_LogicalDevice.destroyPipeline(m_DeviceManager.m_GraphicsPipeline.m_Pipeline);
+    m_DeviceManager.m_LogicalDevice.destroyPipelineLayout(m_DeviceManager.m_GraphicsPipeline.m_PipelineLayout);
+    m_DeviceManager.m_LogicalDevice.destroyRenderPass(m_DeviceManager.m_GraphicsPipeline.m_RenderPass);
+
     for (const auto imageView : m_DeviceManager.m_SwapchainManager.m_SwapchainImageViews)
     {
         m_DeviceManager.m_LogicalDevice.destroyImageView(imageView);
@@ -83,10 +88,6 @@ void VkManager::CreateInstance()
 
     m_Instance = vk::createInstance(createInfo);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
-}
-
-void VkManager::CreateGraphicsPipeline()
-{
 }
 
 void VkManager::Run() const

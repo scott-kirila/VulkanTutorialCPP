@@ -5,6 +5,7 @@
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
+#include "GraphicsPipeline.h"
 #include "vulkan/vulkan.hpp"
 
 #include "SwapchainManager.h"
@@ -34,6 +35,10 @@ public:
 
     void CreateImageViews();
 
+    void CreateRenderPass();
+
+    void CreateGraphicsPipeline();
+
     [[nodiscard]] QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device) const;
 
     WindowManager m_WindowManager;
@@ -41,6 +46,7 @@ public:
     vk::Device m_LogicalDevice;
     vk::SurfaceKHR m_Surface;
     SwapchainManager m_SwapchainManager;
+    GraphicsPipeline m_GraphicsPipeline;
     vk::Queue m_GraphicsQueue;
     vk::Queue m_PresentQueue;
 
