@@ -193,3 +193,22 @@ void GraphicsPipeline::CreateRenderPass(vk::Device device, vk::Format format)
 
     m_RenderPass = device.createRenderPass(renderPassInfo);
 }
+
+void GraphicsPipeline::CreateFramebuffers(vk::Device device)
+{
+    m_Framebuffers.resize(m_SwapchainManager.m_SwapchainImageViews.size());
+
+    for (size_t i = 0; i < m_SwapchainManager.m_SwapchainImageViews.size(); i++)
+    {
+        auto framebufferInfo = vk::FramebufferCreateInfo(
+            {},
+            m_RenderPass,
+            m_SwapchainManager.m_SwapchainImageViews[i],
+            m_SwapchainManager.m_SwapchainExtent.width,
+            m_SwapchainManager.m_SwapchainExtent.height,
+            1
+        );
+
+        m_Framebuffers[i] = device.createFramebuffer(framebufferInfo, nullptr);
+    }
+}

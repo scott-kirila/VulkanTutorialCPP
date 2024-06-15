@@ -22,20 +22,27 @@ VkManager::VkManager()
     m_DeviceManager.CreateSwapchain();
     m_DeviceManager.CreateRenderPass();
     m_DeviceManager.CreateGraphicsPipeline();
+    m_DeviceManager.CreateFramebuffers();
 }
 
 VkManager::~VkManager()
 {
+    for (auto framebuffer : m_DeviceManager.m_GraphicsPipeline.m_Framebuffers)
+    {
+        m_DeviceManager.m_LogicalDevice.destroyFramebuffer(framebuffer, nullptr);
+    }
+
     m_DeviceManager.m_LogicalDevice.destroyPipeline(m_DeviceManager.m_GraphicsPipeline.m_Pipeline);
     m_DeviceManager.m_LogicalDevice.destroyPipelineLayout(m_DeviceManager.m_GraphicsPipeline.m_PipelineLayout);
     m_DeviceManager.m_LogicalDevice.destroyRenderPass(m_DeviceManager.m_GraphicsPipeline.m_RenderPass);
 
-    for (const auto imageView : m_DeviceManager.m_SwapchainManager.m_SwapchainImageViews)
+    for (const auto imageView : m_DeviceManager.m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImageViews)
     {
         m_DeviceManager.m_LogicalDevice.destroyImageView(imageView);
     }
 
-    m_DeviceManager.m_LogicalDevice.destroySwapchainKHR(m_DeviceManager.m_SwapchainManager.m_Swapchain);
+    m_DeviceManager.m_LogicalDevice.destroySwapchainKHR(
+        m_DeviceManager.m_GraphicsPipeline.m_SwapchainManager.m_Swapchain);
     m_DeviceManager.Destroy();
     #ifndef NDEBUG
     m_Instance.destroyDebugUtilsMessengerEXT(m_ValidationManager.m_DebugMessenger);

@@ -87,7 +87,7 @@ void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validati
         {},
         queueCreateInfos,
         {},
-        m_SwapchainManager.m_DeviceExtensions,
+        m_GraphicsPipeline.m_SwapchainManager.m_DeviceExtensions,
         &physicalDeviceFeatures
     );
 
@@ -159,29 +159,31 @@ void DeviceManager::CreateSwapchain()
     createInfo.clipped = vk::True;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (m_LogicalDevice.createSwapchainKHR(&createInfo, nullptr, &m_SwapchainManager.m_Swapchain)
+    if (m_LogicalDevice.createSwapchainKHR(&createInfo, nullptr, &m_GraphicsPipeline.m_SwapchainManager.m_Swapchain)
         != vk::Result::eSuccess)
     {
         throw std::runtime_error("Failed to create swapchain.");
     }
 
-    m_SwapchainManager.m_SwapchainImages = m_LogicalDevice.getSwapchainImagesKHR(m_SwapchainManager.m_Swapchain);
+    m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImages = m_LogicalDevice.getSwapchainImagesKHR(
+        m_GraphicsPipeline.m_SwapchainManager.m_Swapchain);
 
-    m_SwapchainManager.m_SwapchainImageFormat = surfaceFormat.format;
-    m_SwapchainManager.m_SwapchainExtent = extent;
+    m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImageFormat = surfaceFormat.format;
+    m_GraphicsPipeline.m_SwapchainManager.m_SwapchainExtent = extent;
 }
 
 void DeviceManager::CreateImageViews()
 {
-    m_SwapchainManager.m_SwapchainImageViews.resize(m_SwapchainManager.m_SwapchainImages.size());
+    m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImageViews.resize(
+        m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImages.size());
 
-    for (size_t i = 0; i < m_SwapchainManager.m_SwapchainImages.size(); i++)
+    for (size_t i = 0; i < m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImages.size(); i++)
     {
         auto createInfo = vk::ImageViewCreateInfo(
             {},
-            m_SwapchainManager.m_SwapchainImages[i],
+            m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImages[i],
             vk::ImageViewType::e2D,
-            m_SwapchainManager.m_SwapchainImageFormat,
+            m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImageFormat,
             {
                 vk::ComponentSwizzle::eIdentity,
                 vk::ComponentSwizzle::eIdentity,
@@ -195,7 +197,8 @@ void DeviceManager::CreateImageViews()
                 1 }
         );
 
-        if (m_LogicalDevice.createImageView(&createInfo, nullptr, &m_SwapchainManager.m_SwapchainImageViews[i])
+        if (m_LogicalDevice.createImageView(&createInfo, nullptr,
+            &m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImageViews[i])
             != vk::Result::eSuccess)
         {
             throw std::runtime_error("Failed to create image views.");
@@ -205,19 +208,24 @@ void DeviceManager::CreateImageViews()
 
 void DeviceManager::CreateRenderPass()
 {
-    m_GraphicsPipeline.CreateRenderPass(m_LogicalDevice, m_SwapchainManager.m_SwapchainImageFormat);
+    m_GraphicsPipeline.CreateRenderPass(m_LogicalDevice, m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImageFormat);
 }
 
 void DeviceManager::CreateGraphicsPipeline()
 {
-    m_GraphicsPipeline.Create(m_LogicalDevice, m_SwapchainManager.m_SwapchainExtent);
+    m_GraphicsPipeline.Create(m_LogicalDevice, m_GraphicsPipeline.m_SwapchainManager.m_SwapchainExtent);
+}
+
+void DeviceManager::CreateFramebuffers()
+{
+    m_GraphicsPipeline.CreateFramebuffers(m_LogicalDevice);
 }
 
 bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice& device) const
 {
     const QueueFamilyIndices indices = FindQueueFamilies(device);
 
-    const bool extensionsSupported = m_SwapchainManager.CheckDeviceExtensionSupport(device);
+    const bool extensionsSupported = m_GraphicsPipeline.m_SwapchainManager.CheckDeviceExtensionSupport(device);
     bool swapchainAdequate = false;
 
     if (extensionsSupported)
