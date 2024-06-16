@@ -31,9 +31,12 @@ VkManager::VkManager()
 
 VkManager::~VkManager()
 {
-    m_DeviceManager.m_LogicalDevice.destroySemaphore(m_DeviceManager.m_GraphicsPipeline.m_ImageAvailable);
-    m_DeviceManager.m_LogicalDevice.destroySemaphore(m_DeviceManager.m_GraphicsPipeline.m_RenderFinished);
-    m_DeviceManager.m_LogicalDevice.destroyFence(m_DeviceManager.m_GraphicsPipeline.m_InFlight);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        m_DeviceManager.m_LogicalDevice.destroySemaphore(m_DeviceManager.m_GraphicsPipeline.m_ImageAvailableSemaphores[i]);
+        m_DeviceManager.m_LogicalDevice.destroySemaphore(m_DeviceManager.m_GraphicsPipeline.m_RenderFinishedSemaphores[i]);
+        m_DeviceManager.m_LogicalDevice.destroyFence(m_DeviceManager.m_GraphicsPipeline.m_InFlightFences[i]);
+    }
 
     m_DeviceManager.m_LogicalDevice.destroyCommandPool(m_DeviceManager.m_GraphicsPipeline.m_CommandPool);
 

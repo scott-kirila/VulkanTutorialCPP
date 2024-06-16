@@ -8,13 +8,15 @@
 #include "ShaderManager.h"
 #include "SwapchainManager.h"
 
+constexpr int MAX_FRAMES_IN_FLIGHT {2};
+
 class GraphicsPipeline {
 public:
     void CreatePipeline(vk::Device device, vk::Extent2D extent);
     void CreateRenderPass(vk::Device device, vk::Format format);
     void CreateFramebuffers(vk::Device device);
     void CreateCommandPool(const vk::PhysicalDevice& physicalDevice, const vk::Device& logicalDevice, const vk::SurfaceKHR& surface);
-    void CreateCommandBuffer(const vk::Device& device);
+    void CreateCommandBuffers(const vk::Device& device);
     void RecordCommandBuffer(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
     void CreateSyncObjects(const vk::Device& device);
     void DrawFrame(const vk::Device& device);
@@ -25,17 +27,18 @@ public:
     vk::Pipeline m_Pipeline;
     std::vector<vk::Framebuffer> m_Framebuffers;
     vk::CommandPool m_CommandPool;
-    vk::CommandBuffer m_CommandBuffer;
+    std::vector<vk::CommandBuffer> m_CommandBuffers;
 
-    vk::Semaphore m_ImageAvailable;
-    vk::Semaphore m_RenderFinished;
-    vk::Fence m_InFlight;
+    std::vector<vk::Semaphore> m_ImageAvailableSemaphores;
+    std::vector<vk::Semaphore> m_RenderFinishedSemaphores;
+    std::vector<vk::Fence> m_InFlightFences;
 
     vk::Queue m_GraphicsQueue;
     vk::Queue m_PresentQueue;
 
 private:
     ShaderManager m_ShaderManager;
+    uint32_t m_CurrentFrame {};
 };
 
 

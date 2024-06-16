@@ -22,8 +22,8 @@ public:
     GLFWwindow* m_Window;
 
 private:
-    const uint32_t WIDTH = 800;
-    const uint32_t HEIGHT = 600;
+    const uint32_t WIDTH = 1920;
+    const uint32_t HEIGHT = 1080;
 };
 
 

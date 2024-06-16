@@ -203,7 +203,7 @@ void DeviceManager::CreateCommandPool()
 
 void DeviceManager::CreateCommandBuffer()
 {
-    m_GraphicsPipeline.CreateCommandBuffer(m_LogicalDevice);
+    m_GraphicsPipeline.CreateCommandBuffers(m_LogicalDevice);
 }
 
 bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice& device) const
