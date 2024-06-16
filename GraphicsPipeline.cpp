@@ -405,6 +405,16 @@ void GraphicsPipeline::ResizeOrExitCleanup(const vk::Device& logicalDevice) cons
 void GraphicsPipeline::ResizeUpdate(const vk::PhysicalDevice& physicalDevice, const vk::Device& logicalDevice,
     const vk::SurfaceKHR& surface, const WindowManager& windowManager)
 {
+    int width {}, height {};
+    windowManager.GetFramebufferSize(width, height);
+
+    do
+    {
+        windowManager.GetFramebufferSize(width, height);
+        WindowManager::AwaitEvents();
+    }
+    while (width == 0 || height == 0);
+
     ResizeOrExitCleanup(logicalDevice);
     m_SwapchainManager.CreateSwapchain(physicalDevice, logicalDevice, surface, windowManager);
     m_SwapchainManager.CreateImageViews(logicalDevice);

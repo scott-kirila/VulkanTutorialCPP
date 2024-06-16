@@ -42,6 +42,11 @@ void WindowManager::DoLoop(const std::function<void()> &fcn) const
     }
 }
 
+void WindowManager::AwaitEvents()
+{
+    glfwWaitEvents();
+}
+
 void WindowManager::FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 {
     m_FramebufferResized = true;

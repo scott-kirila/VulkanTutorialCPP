@@ -19,6 +19,8 @@ public:
 
     void DoLoop(const std::function<void()> &fcn) const;
 
+    static void AwaitEvents();
+
     static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
 
     GLFWwindow* m_Window;
