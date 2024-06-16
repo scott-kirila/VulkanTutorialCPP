@@ -19,44 +19,13 @@ VkManager::VkManager()
     m_DeviceManager.CreateSurface(m_Instance);
     m_DeviceManager.PickPhysicalDevice(m_Instance);
     m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers);
-    m_DeviceManager.CreateSwapchain();
-    m_DeviceManager.CreateImageViews();
-    m_DeviceManager.CreateRenderPass();
-    m_DeviceManager.CreateGraphicsPipeline();
-    m_DeviceManager.CreateFramebuffers();
-    m_DeviceManager.CreateCommandPool();
-    m_DeviceManager.CreateCommandBuffer();
-    m_DeviceManager.m_GraphicsPipeline.CreateSyncObjects(m_DeviceManager.m_LogicalDevice);
+    m_DeviceManager.CreatePipelineObjects();
 }
 
 VkManager::~VkManager()
 {
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        m_DeviceManager.m_LogicalDevice.destroySemaphore(m_DeviceManager.m_GraphicsPipeline.m_ImageAvailableSemaphores[i]);
-        m_DeviceManager.m_LogicalDevice.destroySemaphore(m_DeviceManager.m_GraphicsPipeline.m_RenderFinishedSemaphores[i]);
-        m_DeviceManager.m_LogicalDevice.destroyFence(m_DeviceManager.m_GraphicsPipeline.m_InFlightFences[i]);
-    }
-
-    m_DeviceManager.m_LogicalDevice.destroyCommandPool(m_DeviceManager.m_GraphicsPipeline.m_CommandPool);
-
-    for (const auto framebuffer : m_DeviceManager.m_GraphicsPipeline.m_Framebuffers)
-    {
-        m_DeviceManager.m_LogicalDevice.destroyFramebuffer(framebuffer);
-    }
-
-    m_DeviceManager.m_LogicalDevice.destroyPipeline(m_DeviceManager.m_GraphicsPipeline.m_Pipeline);
-    m_DeviceManager.m_LogicalDevice.destroyPipelineLayout(m_DeviceManager.m_GraphicsPipeline.m_PipelineLayout);
-    m_DeviceManager.m_LogicalDevice.destroyRenderPass(m_DeviceManager.m_GraphicsPipeline.m_RenderPass);
-
-    for (const auto imageView : m_DeviceManager.m_GraphicsPipeline.m_SwapchainManager.m_SwapchainImageViews)
-    {
-        m_DeviceManager.m_LogicalDevice.destroyImageView(imageView);
-    }
-
-    m_DeviceManager.m_LogicalDevice.destroySwapchainKHR(
-        m_DeviceManager.m_GraphicsPipeline.m_SwapchainManager.m_Swapchain);
     m_DeviceManager.Destroy();
+
     #ifndef NDEBUG
     m_Instance.destroyDebugUtilsMessengerEXT(m_ValidationManager.m_DebugMessenger);
     #endif
@@ -112,10 +81,7 @@ void VkManager::CreateInstance()
 
 void VkManager::Run()
 {
-    auto fnc = [this]() { m_DeviceManager.m_GraphicsPipeline.DrawFrame(m_DeviceManager.m_LogicalDevice); };
-    m_DeviceManager.m_WindowManager.DoLoop(fnc);
-
-    m_DeviceManager.m_LogicalDevice.waitIdle();
+    m_DeviceManager.Draw();
 }
 
 std::vector<const char *> VkManager::GetRequiredExtensions()

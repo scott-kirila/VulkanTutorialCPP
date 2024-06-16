@@ -1,5 +1,5 @@
 //
-// Created by hetan on 6/15/2024.
+// Created by Scott Kirila on 6/15/2024.
 //
 
 #ifndef GRAPHICSPIPELINE_H
@@ -19,7 +19,11 @@ public:
     void CreateCommandBuffers(const vk::Device& device);
     void RecordCommandBuffer(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
     void CreateSyncObjects(const vk::Device& device);
-    void DrawFrame(const vk::Device& device);
+    void DrawFrame(const vk::PhysicalDevice& physicalDevice, const vk::Device& logicalDevice,
+        const vk::SurfaceKHR& surface, const WindowManager& windowManager);
+    void ResizeOrExitCleanup(const vk::Device& logicalDevice) const;
+    void ResizeUpdate(const vk::PhysicalDevice& physicalDevice, const vk::Device& logicalDevice,
+        const vk::SurfaceKHR& surface, const WindowManager& windowManager);
 
     SwapchainManager m_SwapchainManager;
     vk::RenderPass m_RenderPass;
@@ -33,6 +37,8 @@ public:
     std::vector<vk::Semaphore> m_RenderFinishedSemaphores;
     std::vector<vk::Fence> m_InFlightFences;
 
+    bool m_FramebufferResized {false};
+
     vk::Queue m_GraphicsQueue;
     vk::Queue m_PresentQueue;
 
@@ -40,7 +46,5 @@ private:
     ShaderManager m_ShaderManager;
     uint32_t m_CurrentFrame {};
 };
-
-
 
 #endif //GRAPHICSPIPELINE_H

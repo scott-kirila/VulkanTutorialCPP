@@ -9,10 +9,11 @@ WindowManager::WindowManager()
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     m_Window = glfwCreateWindow(static_cast<int>(WIDTH), static_cast<int>(HEIGHT),
-        "Vulkan", nullptr, nullptr);
+        "Vulkan Tutorial", nullptr, nullptr);
+    glfwSetFramebufferSizeCallback(m_Window, FramebufferResizeCallback);
 }
 
 WindowManager::~WindowManager()
@@ -26,7 +27,7 @@ void WindowManager::GetFramebufferSize(int &width, int &height) const
     glfwGetFramebufferSize(m_Window, &width, &height);
 }
 
-void WindowManager::DoLoop(const std::function<void(void)> &fcn) const
+void WindowManager::DoLoop(const std::function<void()> &fcn) const
 {
     while (!glfwWindowShouldClose(m_Window))
     {
@@ -39,4 +40,9 @@ void WindowManager::DoLoop(const std::function<void(void)> &fcn) const
             glfwSetWindowShouldClose(m_Window, true);
         }
     }
+}
+
+void WindowManager::FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+    m_FramebufferResized = true;
 }

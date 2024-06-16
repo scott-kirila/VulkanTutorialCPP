@@ -17,9 +17,12 @@ public:
 
     void GetFramebufferSize(int& width, int& height) const;
 
-    void DoLoop(const std::function<void(void)> &fcn) const;
+    void DoLoop(const std::function<void()> &fcn) const;
+
+    static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
 
     GLFWwindow* m_Window;
+    inline static bool m_FramebufferResized;
 
 private:
     const uint32_t WIDTH = 1920;

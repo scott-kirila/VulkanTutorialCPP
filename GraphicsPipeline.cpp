@@ -1,8 +1,10 @@
 //
-// Created by hetan on 6/15/2024.
+// Created by Scott Kirila on 6/15/2024.
 //
 
 #include "GraphicsPipeline.h"
+
+#include <iostream>
 
 #include "Utilities.h"
 
@@ -317,21 +319,30 @@ void GraphicsPipeline::CreateSyncObjects(const vk::Device &device)
     }
 }
 
-void GraphicsPipeline::DrawFrame(const vk::Device &device)
+void GraphicsPipeline::DrawFrame(const vk::PhysicalDevice& physicalDevice, const vk::Device &logicalDevice,
+    const vk::SurfaceKHR& surface, const WindowManager& windowManager)
 {
-    if (device.waitForFences(m_InFlightFences[m_CurrentFrame], vk::True, UINT64_MAX) == vk::Result::eTimeout)
+    if (logicalDevice.waitForFences(m_InFlightFences[m_CurrentFrame], vk::True, UINT64_MAX) == vk::Result::eTimeout)
     {
         throw std::runtime_error("Timed out while waiting for fence.");
     }
 
-    device.resetFences(m_InFlightFences[m_CurrentFrame]);
 
     uint32_t imageIndex;
-    if (device.acquireNextImageKHR(m_SwapchainManager.m_Swapchain, UINT64_MAX,
-        m_ImageAvailableSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex) != vk::Result::eSuccess)
+    vk::Result result = logicalDevice.acquireNextImageKHR(m_SwapchainManager.m_Swapchain, UINT64_MAX,
+        m_ImageAvailableSemaphores[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
+
+    if (result == vk::Result::eErrorOutOfDateKHR)
     {
-        throw std::runtime_error("Failed to acquire next image.");
+        ResizeUpdate(physicalDevice, logicalDevice, surface, windowManager);
+        return;
     }
+    if (result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
+    {
+        throw std::runtime_error("Failed to acquire swapchain image.");
+    }
+
+    logicalDevice.resetFences(m_InFlightFences[m_CurrentFrame]);
 
     m_CommandBuffers[m_CurrentFrame].reset();
     RecordCommandBuffer(m_CommandBuffers[m_CurrentFrame], imageIndex);
@@ -357,10 +368,45 @@ void GraphicsPipeline::DrawFrame(const vk::Device &device)
         imageIndex
     );
 
-    if (m_PresentQueue.presentKHR(presentInfo) != vk::Result::eSuccess)
+    try
     {
-        throw std::runtime_error("Failed to present.");
+        result = m_PresentQueue.presentKHR(presentInfo);
+
+        if (result == vk::Result::eSuboptimalKHR || WindowManager::m_FramebufferResized)
+        {
+            WindowManager::m_FramebufferResized = false;
+            ResizeUpdate(physicalDevice, logicalDevice, surface, windowManager);
+        } else if (result != vk::Result::eSuccess)
+        {
+            throw std::runtime_error("Failed to present swapchain image.");
+        }
+    } catch (vk::OutOfDateKHRError&)
+    {
+        WindowManager::m_FramebufferResized = false;
+        ResizeUpdate(physicalDevice, logicalDevice, surface, windowManager);
     }
 
     m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+void GraphicsPipeline::ResizeOrExitCleanup(const vk::Device& logicalDevice) const
+{
+    logicalDevice.waitIdle();
+
+    for (const auto framebuffer : m_Framebuffers)
+    {
+        logicalDevice.destroyFramebuffer(framebuffer);
+    }
+
+    m_SwapchainManager.CleanupSwapchain(logicalDevice);
+
+}
+
+void GraphicsPipeline::ResizeUpdate(const vk::PhysicalDevice& physicalDevice, const vk::Device& logicalDevice,
+    const vk::SurfaceKHR& surface, const WindowManager& windowManager)
+{
+    ResizeOrExitCleanup(logicalDevice);
+    m_SwapchainManager.CreateSwapchain(physicalDevice, logicalDevice, surface, windowManager);
+    m_SwapchainManager.CreateImageViews(logicalDevice);
+    CreateFramebuffers(logicalDevice);
 }

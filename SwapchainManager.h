@@ -19,14 +19,22 @@ struct SwapchainSupportDetails
 struct SwapchainManager {
     [[nodiscard]] bool CheckDeviceExtensionSupport(const vk::PhysicalDevice& device) const;
 
-    [[nodiscard]] static SwapchainSupportDetails QuerySwapchainSupport(const vk::PhysicalDevice& device, const vk::SurfaceKHR& surface);
+    [[nodiscard]] static SwapchainSupportDetails QuerySwapchainSupport(const vk::PhysicalDevice& device,
+        const vk::SurfaceKHR& surface);
 
-    // Swapchain settings
     static vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 
     static vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
 
-    static vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, const WindowManager& windowManager);
+    static vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities,
+        const WindowManager& windowManager);
+
+    void CreateSwapchain(const vk::PhysicalDevice& physicalDevice, const vk::Device& logicalDevice,
+                         const vk::SurfaceKHR& surface, const WindowManager& windowManager);
+
+    void CleanupSwapchain(const vk::Device& logicalDevice) const;
+
+    void CreateImageViews(const vk::Device& logicalDevice);
 
     const std::vector<const char*> m_DeviceExtensions = {
         vk::KHRSwapchainExtensionName,
