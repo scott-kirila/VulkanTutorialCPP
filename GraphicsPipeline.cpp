@@ -11,8 +11,8 @@ void GraphicsPipeline::CreatePipeline(vk::Device device, vk::Extent2D extent)
     auto vertexShaderCode = ShaderManager::ReadFile("../Shaders/vert.spv");
     auto fragmentShaderCode = ShaderManager::ReadFile("../Shaders/frag.spv");
 
-    vk::ShaderModule vertexShaderModule = m_ShaderManager.CreateShaderModule(vertexShaderCode, device);
-    vk::ShaderModule fragmentShaderModule = m_ShaderManager.CreateShaderModule(fragmentShaderCode, device);
+    vk::ShaderModule vertexShaderModule = ShaderManager::CreateShaderModule(vertexShaderCode, device);
+    vk::ShaderModule fragmentShaderModule = ShaderManager::CreateShaderModule(fragmentShaderCode, device);
 
     auto vertexShaderStageInfo = vk::PipelineShaderStageCreateInfo(
         {},
@@ -250,7 +250,7 @@ void GraphicsPipeline::CreateCommandBuffer(const vk::Device &device)
 
 }
 
-void GraphicsPipeline::RecordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
+void GraphicsPipeline::RecordCommandBuffer(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
 {
     auto beginInfo = vk::CommandBufferBeginInfo(
         {},
@@ -330,8 +330,6 @@ void GraphicsPipeline::DrawFrame(const vk::Device &device)
     vk::Semaphore waitSemaphores[] = { m_ImageAvailable };
     vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput) };
     vk::Semaphore signalSemaphores[] = { m_RenderFinished };
-
-    vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
     auto submitInfo = vk::SubmitInfo(
         waitSemaphores,

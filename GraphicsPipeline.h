@@ -15,7 +15,7 @@ public:
     void CreateFramebuffers(vk::Device device);
     void CreateCommandPool(const vk::PhysicalDevice& physicalDevice, const vk::Device& logicalDevice, const vk::SurfaceKHR& surface);
     void CreateCommandBuffer(const vk::Device& device);
-    void RecordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
+    void RecordCommandBuffer(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
     void CreateSyncObjects(const vk::Device& device);
     void DrawFrame(const vk::Device& device);
 

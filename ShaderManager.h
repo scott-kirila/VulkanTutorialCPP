@@ -13,11 +13,9 @@
 
 class ShaderManager {
 public:
-    void CompileShaders();
-
     static std::vector<char> ReadFile(const std::string& filename);
 
-    vk::ShaderModule CreateShaderModule(const std::vector<char>& code, vk::Device device);
+    static vk::ShaderModule CreateShaderModule(const std::vector<char>& code, vk::Device device);
 
 private:
     const char* m_VertexShader = R"(
