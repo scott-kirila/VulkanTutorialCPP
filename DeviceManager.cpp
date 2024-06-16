@@ -6,36 +6,11 @@
 
 #include <set>
 
+#include "Utilities.h"
+
 void DeviceManager::Destroy() const
 {
     m_LogicalDevice.destroy();
-}
-
-QueueFamilyIndices DeviceManager::FindQueueFamilies(const vk::PhysicalDevice device) const
-{
-    QueueFamilyIndices indices;
-
-    const std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
-
-    int i = 0;
-    for (const auto& queueFamily : queueFamilies)
-    {
-        if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
-        {
-            indices.m_GraphicsFamily = i;
-        }
-
-        if (device.getSurfaceSupportKHR(i, m_Surface))
-        {
-            indices.m_PresentFamily = i;
-        }
-
-        if (indices.IsComplete()) break;
-
-        i++;
-    }
-
-    return indices;
 }
 
 void DeviceManager::PickPhysicalDevice(const vk::Instance &instance)
@@ -64,7 +39,7 @@ void DeviceManager::PickPhysicalDevice(const vk::Instance &instance)
 
 void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validationLayers)
 {
-    QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
+    QueueFamilyIndices indices = Utilities::FindQueueFamilies(m_PhysicalDevice, m_Surface);
 
     std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamiles = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
@@ -139,7 +114,7 @@ void DeviceManager::CreateSwapchain()
         vk::ImageUsageFlagBits::eColorAttachment
     );
 
-    const auto indices = FindQueueFamilies(m_PhysicalDevice);
+    const auto indices = Utilities::FindQueueFamilies(m_PhysicalDevice, m_Surface);
     const uint32_t queueFamilyIndices[] = { indices.m_GraphicsFamily.value(), indices.m_PresentFamily.value() };
 
     if (indices.m_GraphicsFamily != indices.m_PresentFamily)
@@ -213,7 +188,7 @@ void DeviceManager::CreateRenderPass()
 
 void DeviceManager::CreateGraphicsPipeline()
 {
-    m_GraphicsPipeline.Create(m_LogicalDevice, m_GraphicsPipeline.m_SwapchainManager.m_SwapchainExtent);
+    m_GraphicsPipeline.CreatePipeline(m_LogicalDevice, m_GraphicsPipeline.m_SwapchainManager.m_SwapchainExtent);
 }
 
 void DeviceManager::CreateFramebuffers()
@@ -221,9 +196,19 @@ void DeviceManager::CreateFramebuffers()
     m_GraphicsPipeline.CreateFramebuffers(m_LogicalDevice);
 }
 
+void DeviceManager::CreateCommandPool()
+{
+    m_GraphicsPipeline.CreateCommandPool(m_PhysicalDevice, m_LogicalDevice, m_Surface);
+}
+
+void DeviceManager::CreateCommandBuffer()
+{
+    m_GraphicsPipeline.CreateCommandBuffer(m_LogicalDevice);
+}
+
 bool DeviceManager::IsDeviceSuitable(const vk::PhysicalDevice& device) const
 {
-    const QueueFamilyIndices indices = FindQueueFamilies(device);
+    const QueueFamilyIndices indices = Utilities::FindQueueFamilies(device, m_Surface);
 
     const bool extensionsSupported = m_GraphicsPipeline.m_SwapchainManager.CheckDeviceExtensionSupport(device);
     bool swapchainAdequate = false;

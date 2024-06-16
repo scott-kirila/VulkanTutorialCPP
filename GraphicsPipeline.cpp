@@ -4,7 +4,9 @@
 
 #include "GraphicsPipeline.h"
 
-void GraphicsPipeline::Create(vk::Device device, vk::Extent2D extent)
+#include "Utilities.h"
+
+void GraphicsPipeline::CreatePipeline(vk::Device device, vk::Extent2D extent)
 {
     auto vertexShaderCode = ShaderManager::ReadFile("../Shaders/vert.spv");
     auto fragmentShaderCode = ShaderManager::ReadFile("../Shaders/frag.spv");
@@ -211,4 +213,75 @@ void GraphicsPipeline::CreateFramebuffers(vk::Device device)
 
         m_Framebuffers[i] = device.createFramebuffer(framebufferInfo, nullptr);
     }
+}
+
+void GraphicsPipeline::CreateCommandPool(const vk::PhysicalDevice& physicalDevice,
+                                         const vk::Device& logicalDevice, const vk::SurfaceKHR& surface)
+{
+    const auto queueFamilyIndices = Utilities::FindQueueFamilies(physicalDevice, surface);
+
+    const auto poolInfo = vk::CommandPoolCreateInfo(
+        vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+        queueFamilyIndices.m_GraphicsFamily.value()
+    );
+
+    m_CommandPool = logicalDevice.createCommandPool(poolInfo, nullptr);
+}
+
+void GraphicsPipeline::CreateCommandBuffer(const vk::Device &device)
+{
+    auto allocInfo = vk::CommandBufferAllocateInfo(
+        m_CommandPool,
+        vk::CommandBufferLevel::ePrimary,
+        1
+    );
+
+    m_CommandBuffer = device.allocateCommandBuffers(allocInfo).front();
+
+}
+
+void GraphicsPipeline::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex)
+{
+    auto beginInfo = vk::CommandBufferBeginInfo(
+        {},
+        nullptr
+    );
+
+    commandBuffer.begin(beginInfo);
+
+    vk::ClearValue clearColor = {{0.0f, 0.0f, 0.0f, 1.0f}};
+
+    auto renderPassInfo = vk::RenderPassBeginInfo(
+        m_RenderPass,
+        m_Framebuffers[imageIndex],
+        { {0, 0}, m_SwapchainManager.m_SwapchainExtent },
+        clearColor
+    );
+
+    commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_Pipeline);
+
+    auto viewport = vk::Viewport(
+        0.0f,
+        0.0f,
+        static_cast<float>(m_SwapchainManager.m_SwapchainExtent.width),
+        static_cast<float>(m_SwapchainManager.m_SwapchainExtent.height),
+        0.0f,
+        1.0f
+    );
+
+    commandBuffer.setViewport(0, viewport);
+
+    auto scissor = vk::Rect2D(
+        {0, 0},
+        m_SwapchainManager.m_SwapchainExtent
+    );
+
+    commandBuffer.setScissor(0, scissor);
+
+    commandBuffer.draw(3, 1, 0, 0);
+
+    commandBuffer.endRenderPass();
+
+    commandBuffer.end();
 }

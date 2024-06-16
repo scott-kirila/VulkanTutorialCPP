@@ -23,13 +23,16 @@ VkManager::VkManager()
     m_DeviceManager.CreateRenderPass();
     m_DeviceManager.CreateGraphicsPipeline();
     m_DeviceManager.CreateFramebuffers();
+    m_DeviceManager.CreateCommandPool();
 }
 
 VkManager::~VkManager()
 {
-    for (auto framebuffer : m_DeviceManager.m_GraphicsPipeline.m_Framebuffers)
+    m_DeviceManager.m_LogicalDevice.destroyCommandPool(m_DeviceManager.m_GraphicsPipeline.m_CommandPool);
+
+    for (const auto framebuffer : m_DeviceManager.m_GraphicsPipeline.m_Framebuffers)
     {
-        m_DeviceManager.m_LogicalDevice.destroyFramebuffer(framebuffer, nullptr);
+        m_DeviceManager.m_LogicalDevice.destroyFramebuffer(framebuffer);
     }
 
     m_DeviceManager.m_LogicalDevice.destroyPipeline(m_DeviceManager.m_GraphicsPipeline.m_Pipeline);

@@ -10,17 +10,6 @@
 
 #include "SwapchainManager.h"
 
-struct QueueFamilyIndices
-{
-    [[nodiscard]] bool IsComplete() const
-    {
-        return m_GraphicsFamily.has_value() && m_PresentFamily.has_value();
-    }
-
-    std::optional<uint32_t> m_GraphicsFamily;
-    std::optional<uint32_t> m_PresentFamily;
-};
-
 class DeviceManager {
 public:
     void Destroy() const;
@@ -41,7 +30,9 @@ public:
 
     void CreateFramebuffers();
 
-    [[nodiscard]] QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device) const;
+    void CreateCommandPool();
+
+    void CreateCommandBuffer();
 
     WindowManager m_WindowManager;
     vk::PhysicalDevice m_PhysicalDevice;
