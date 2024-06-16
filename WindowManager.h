@@ -6,6 +6,8 @@
 #define WINDOWMANAGER_H
 
 #define GLFW_INCLUDE_VULKAN
+#include <functional>
+
 #include "GLFW/glfw3.h"
 
 class WindowManager {
@@ -15,7 +17,7 @@ public:
 
     void GetFramebufferSize(int& width, int& height) const;
 
-    void DoLoop() const;
+    void DoLoop(const std::function<void(void)> &fcn) const;
 
     GLFWwindow* m_Window;
 

@@ -39,8 +39,8 @@ public:
     vk::Device m_LogicalDevice;
     vk::SurfaceKHR m_Surface;
     GraphicsPipeline m_GraphicsPipeline;
-    vk::Queue m_GraphicsQueue;
-    vk::Queue m_PresentQueue;
+    // vk::Queue m_GraphicsQueue;
+    // vk::Queue m_PresentQueue;
 
 private:
 

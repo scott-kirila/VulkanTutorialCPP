@@ -14,7 +14,7 @@ public:
     VkManager();
     ~VkManager();
 
-    void Run() const;
+    void Run();
 
     static std::vector<const char *> GetRequiredExtensions();
 

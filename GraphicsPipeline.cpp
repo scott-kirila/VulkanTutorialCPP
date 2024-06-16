@@ -187,10 +187,20 @@ void GraphicsPipeline::CreateRenderPass(vk::Device device, vk::Format format)
         colorAttachmentRef
     );
 
+    auto dependency = vk::SubpassDependency(
+        vk::SubpassExternal,
+        0,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        {},
+        vk::AccessFlagBits::eColorAttachmentWrite
+    );
+
     auto renderPassInfo = vk::RenderPassCreateInfo(
         {},
         colorAttachment,
-        subpass
+        subpass,
+        dependency
     );
 
     m_RenderPass = device.createRenderPass(renderPassInfo);
@@ -240,7 +250,7 @@ void GraphicsPipeline::CreateCommandBuffer(const vk::Device &device)
 
 }
 
-void GraphicsPipeline::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex)
+void GraphicsPipeline::RecordCommandBuffer(vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
 {
     auto beginInfo = vk::CommandBufferBeginInfo(
         {},
@@ -284,4 +294,64 @@ void GraphicsPipeline::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint
     commandBuffer.endRenderPass();
 
     commandBuffer.end();
+}
+
+void GraphicsPipeline::CreateSyncObjects(const vk::Device &device)
+{
+    auto semaphoreInfo = vk::SemaphoreCreateInfo();
+    auto fenceInfo = vk::FenceCreateInfo(
+        vk::FenceCreateFlagBits::eSignaled
+    );
+
+    m_ImageAvailable = device.createSemaphore(semaphoreInfo);
+    m_RenderFinished = device.createSemaphore(semaphoreInfo);
+    m_InFlight = device.createFence(fenceInfo);
+}
+
+void GraphicsPipeline::DrawFrame(const vk::Device &device)
+{
+    if (device.waitForFences(m_InFlight, vk::True, UINT64_MAX) == vk::Result::eTimeout)
+    {
+        throw std::runtime_error("Timed out while waiting for fence.");
+    }
+
+    device.resetFences(m_InFlight);
+
+    uint32_t imageIndex;
+    if (device.acquireNextImageKHR(m_SwapchainManager.m_Swapchain, UINT64_MAX,
+        m_ImageAvailable, VK_NULL_HANDLE, &imageIndex) != vk::Result::eSuccess)
+    {
+        throw std::runtime_error("Failed to acquire next image.");
+    }
+
+    m_CommandBuffer.reset();
+    RecordCommandBuffer(m_CommandBuffer, imageIndex);
+
+    vk::Semaphore waitSemaphores[] = { m_ImageAvailable };
+    vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput) };
+    vk::Semaphore signalSemaphores[] = { m_RenderFinished };
+
+    vk::PipelineStageFlags waitDestinationStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+
+    auto submitInfo = vk::SubmitInfo(
+        waitSemaphores,
+        waitStages,
+        m_CommandBuffer,
+        signalSemaphores
+    );
+
+    m_GraphicsQueue.submit(submitInfo, m_InFlight);
+
+    vk::SwapchainKHR swapchains[] = { m_SwapchainManager.m_Swapchain };
+
+    auto presentInfo = vk::PresentInfoKHR(
+        signalSemaphores,
+        swapchains,
+        imageIndex
+    );
+
+    if (m_PresentQueue.presentKHR(presentInfo) != vk::Result::eSuccess)
+    {
+        throw std::runtime_error("Failed to present.");
+    }
 }

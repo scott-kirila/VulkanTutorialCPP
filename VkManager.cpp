@@ -20,14 +20,21 @@ VkManager::VkManager()
     m_DeviceManager.PickPhysicalDevice(m_Instance);
     m_DeviceManager.CreateLogicalDevice(m_ValidationManager.m_ValidationLayers);
     m_DeviceManager.CreateSwapchain();
+    m_DeviceManager.CreateImageViews();
     m_DeviceManager.CreateRenderPass();
     m_DeviceManager.CreateGraphicsPipeline();
     m_DeviceManager.CreateFramebuffers();
     m_DeviceManager.CreateCommandPool();
+    m_DeviceManager.CreateCommandBuffer();
+    m_DeviceManager.m_GraphicsPipeline.CreateSyncObjects(m_DeviceManager.m_LogicalDevice);
 }
 
 VkManager::~VkManager()
 {
+    m_DeviceManager.m_LogicalDevice.destroySemaphore(m_DeviceManager.m_GraphicsPipeline.m_ImageAvailable);
+    m_DeviceManager.m_LogicalDevice.destroySemaphore(m_DeviceManager.m_GraphicsPipeline.m_RenderFinished);
+    m_DeviceManager.m_LogicalDevice.destroyFence(m_DeviceManager.m_GraphicsPipeline.m_InFlight);
+
     m_DeviceManager.m_LogicalDevice.destroyCommandPool(m_DeviceManager.m_GraphicsPipeline.m_CommandPool);
 
     for (const auto framebuffer : m_DeviceManager.m_GraphicsPipeline.m_Framebuffers)
@@ -100,9 +107,12 @@ void VkManager::CreateInstance()
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance);
 }
 
-void VkManager::Run() const
+void VkManager::Run()
 {
-    m_DeviceManager.m_WindowManager.DoLoop();
+    auto fnc = [this]() { m_DeviceManager.m_GraphicsPipeline.DrawFrame(m_DeviceManager.m_LogicalDevice); };
+    m_DeviceManager.m_WindowManager.DoLoop(fnc);
+
+    m_DeviceManager.m_LogicalDevice.waitIdle();
 }
 
 std::vector<const char *> VkManager::GetRequiredExtensions()

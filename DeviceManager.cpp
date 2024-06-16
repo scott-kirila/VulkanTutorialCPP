@@ -76,8 +76,8 @@ void DeviceManager::CreateLogicalDevice(const std::vector<const char*>& validati
         throw std::runtime_error("Failed to create logical device");
     }
 
-    m_LogicalDevice.getQueue(indices.m_GraphicsFamily.value(), 0, &m_GraphicsQueue);
-    m_LogicalDevice.getQueue(indices.m_PresentFamily.value(), 0, &m_PresentQueue);
+    m_LogicalDevice.getQueue(indices.m_GraphicsFamily.value(), 0, &m_GraphicsPipeline.m_GraphicsQueue);
+    m_LogicalDevice.getQueue(indices.m_PresentFamily.value(), 0, &m_GraphicsPipeline.m_PresentQueue);
 }
 
 void DeviceManager::CreateSurface(const vk::Instance& instance)

@@ -26,11 +26,13 @@ void WindowManager::GetFramebufferSize(int &width, int &height) const
     glfwGetFramebufferSize(m_Window, &width, &height);
 }
 
-void WindowManager::DoLoop() const
+void WindowManager::DoLoop(const std::function<void(void)> &fcn) const
 {
     while (!glfwWindowShouldClose(m_Window))
     {
         glfwPollEvents();
+
+        fcn();
 
         if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         {
