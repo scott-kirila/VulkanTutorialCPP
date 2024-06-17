@@ -45,11 +45,11 @@ void VkManager::CreateInstance()
     }
     #endif
 
-    std::vector<vk::ExtensionProperties> vkExtensions = vk::enumerateInstanceExtensionProperties();
-    for (const auto& vkExtension: vkExtensions)
-    {
-        std::cout << vkExtension.extensionName << std::endl;
-    }
+    // std::vector<vk::ExtensionProperties> vkExtensions = vk::enumerateInstanceExtensionProperties();
+    // for (const auto& vkExtension: vkExtensions)
+    // {
+    //     std::cout << vkExtension.extensionName << std::endl;
+    // }
 
     auto extensions = GetRequiredExtensions();
 
@@ -68,6 +68,10 @@ void VkManager::CreateInstance()
         static_cast<uint32_t>(extensions.size()),
         extensions.data(),
     };
+
+    #if _APPLE_
+    createInfo.flags |= vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR;
+    #endif _APPLE_
 
     #ifndef NDEBUG
     createInfo.enabledLayerCount = m_ValidationManager.m_ValidationLayers.size();
@@ -90,6 +94,10 @@ std::vector<const char *> VkManager::GetRequiredExtensions()
     const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
     std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+    #if _APPLE_
+    extensions.emplace_back(vk::KHRPortabilityEnumerationExtensionName);
+    #endif
 
     #ifndef NDEBUG
     extensions.push_back(vk::EXTDebugUtilsExtensionName);
