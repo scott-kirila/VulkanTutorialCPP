@@ -32,12 +32,15 @@ void GraphicsPipeline::CreatePipeline(vk::Device device, vk::Extent2D extent)
 
     vk::PipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
 
+    auto bindingDescription = Vertex::GetBindingDescription();
+    auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+
     auto vertexInputInfo = vk::PipelineVertexInputStateCreateInfo(
         {},
-        0,
-        nullptr,
-        0,
-        nullptr
+        1,
+        &bindingDescription,
+        1,
+        attributeDescriptions.data()
     );
 
     auto inputAssembly = vk::PipelineInputAssemblyStateCreateInfo(

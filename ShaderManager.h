@@ -11,6 +11,8 @@
 
 //#include "shaderc/shaderc.hpp"
 
+#include "Utilities.h"
+
 class ShaderManager {
 public:
     static std::vector<char> ReadFile(const std::string& filename);
@@ -18,6 +20,12 @@ public:
     static vk::ShaderModule CreateShaderModule(const std::vector<char>& code, vk::Device device);
 
 private:
+    const std::vector<Vertex> vertices = {
+        {{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
+
     const char* m_VertexShader = R"(
         #version 460
 

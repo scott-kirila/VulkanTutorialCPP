@@ -5,10 +5,22 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+#include <array>
 #include <cstdint>
 #include <optional>
 
+#include "glm/glm.hpp"
 #include "vulkan/vulkan.hpp"
+
+struct Vertex
+{
+    glm::vec2 pos;
+    glm::vec3 color;
+
+    static vk::VertexInputBindingDescription GetBindingDescription();
+
+    static std::array<vk::VertexInputAttributeDescription, 2> GetAttributeDescriptions();
+};
 
 struct QueueFamilyIndices
 {
